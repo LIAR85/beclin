@@ -34,6 +34,9 @@ export default function TicketCard({ order }) {
             <strong>Servicio:</strong> {order.service_type}
           </p>
           <p>
+            <strong>Tipo:</strong> {order.service_mode || 'regular'}
+          </p>
+          <p>
             <strong>Cantidad:</strong> {order.quantity}
           </p>
           <p>

@@ -20,6 +20,7 @@ export default function DashboardPage() {
         id: localItem.localId,
         client_name: formValues.fullName,
         service_type: formValues.serviceType,
+        service_mode: String(formValues.serviceMode || 'Regular').toLowerCase(),
         quantity: formValues.quantity,
         status: 'pending_offline',
       });

@@ -49,6 +49,7 @@ create table if not exists public.orders (
   id bigint generated always as identity primary key,
   client_id uuid not null references public.clients(id) on delete restrict,
   service_type text not null,
+  service_mode text not null default 'regular' check (service_mode in ('regular', 'express')),
   quantity integer not null check (quantity > 0),
   status public.order_status not null default 'pending',
   notes text,
@@ -66,6 +67,25 @@ alter table if exists public.clients
 
 alter table if exists public.orders
   alter column created_by drop not null;
+
+alter table if exists public.orders
+  add column if not exists service_mode text;
+
+update public.orders
+set service_mode = 'regular'
+where service_mode is null;
+
+alter table if exists public.orders
+  alter column service_mode set default 'regular';
+
+alter table if exists public.orders
+  alter column service_mode set not null;
+
+alter table if exists public.orders
+  drop constraint if exists orders_service_mode_check;
+
+alter table if exists public.orders
+  add constraint orders_service_mode_check check (service_mode in ('regular', 'express'));
 
 create index if not exists idx_clients_created_by on public.clients(created_by);
 create index if not exists idx_orders_created_by on public.orders(created_by);
@@ -143,6 +163,7 @@ begin
           'order_id', new.id,
           'client_id', new.client_id,
           'status', new.status,
+          'service_mode', new.service_mode,
           'recipient', jsonb_build_object(
             'name', v_client_name,
             'phone', v_client_phone,

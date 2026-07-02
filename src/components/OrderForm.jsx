@@ -5,6 +5,7 @@ const INITIAL_FORM = {
   phone: '',
   email: '',
   serviceType: 'Lavado',
+  serviceMode: 'Regular',
   customService: '',
   quantity: 1,
   notes: '',
@@ -23,6 +24,10 @@ const SERVICES = [
 export default function OrderForm({ onSubmit, loading }) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [formError, setFormError] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingPayload, setPendingPayload] = useState(null);
+
+  const quantityOptions = Array.from({ length: 20 }, (_, index) => index + 1);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -38,19 +43,36 @@ export default function OrderForm({ onSubmit, loading }) {
       return;
     }
 
+    if (!form.notes.trim()) {
+      setFormError('El campo Notas es obligatorio.');
+      return;
+    }
+
     const payload = {
       ...form,
       serviceType: form.serviceType === 'Otro' ? form.customService.trim() : form.serviceType,
+      serviceMode: form.serviceMode,
       email: form.email.trim(),
+      notes: form.notes.trim(),
     };
 
+    setPendingPayload(payload);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (!pendingPayload) return;
+
     try {
-      const shouldReset = await onSubmit(payload);
+      const shouldReset = await onSubmit(pendingPayload);
       if (shouldReset) {
         setForm(INITIAL_FORM);
       }
+      setPendingPayload(null);
+      setConfirmOpen(false);
     } catch (error) {
       setFormError(error.message || 'No se pudo registrar el pedido.');
+      setConfirmOpen(false);
     }
   };
 
@@ -129,6 +151,30 @@ export default function OrderForm({ onSubmit, loading }) {
         </div>
       </div>
 
+      <div>
+        <p className="mb-2 text-sm font-medium text-slate-700">Tipo de servicio</p>
+        <div className="grid grid-cols-2 gap-2">
+          {['Regular', 'Express'].map((mode) => {
+            const isActive = form.serviceMode === mode;
+
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, serviceMode: mode }))}
+                className={`rounded-xl border px-3 py-3 text-sm font-semibold transition ${
+                  isActive
+                    ? 'border-brand-700 bg-brand-100 text-brand-900'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:bg-brand-50'
+                }`}
+              >
+                {mode === 'Express' ? '⚡ Servicio Express' : '🕒 Servicio Regular'}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {form.serviceType === 'Otro' && (
         <label className="block text-sm font-medium text-slate-700">
           Especifica el servicio
@@ -145,22 +191,27 @@ export default function OrderForm({ onSubmit, loading }) {
 
       <div className="grid grid-cols-1 gap-3">
         <label className="block text-sm font-medium text-slate-700">
-          Cantidad
-          <input
+          Cantidad (Wheel Picker)
+          <select
             required
-            min={1}
-            type="number"
             name="quantity"
             value={form.quantity}
             onChange={handleChange}
             className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-brand-500 focus:ring"
-          />
+          >
+            {quantityOptions.map((option) => (
+              <option key={option} value={option}>
+                {option} prendas
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 
       <label className="block text-sm font-medium text-slate-700">
         Notas
         <textarea
+          required
           rows={2}
           name="notes"
           value={form.notes}
@@ -180,6 +231,41 @@ export default function OrderForm({ onSubmit, loading }) {
 
       {formError && (
         <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800">{formError}</p>
+      )}
+
+      {confirmOpen && pendingPayload && (
+        <div className="rounded-xl border border-brand-200 bg-brand-50 p-3 text-sm text-slate-800">
+          <p className="font-semibold text-brand-900">Confirmar registro de pedido</p>
+          <p className="mt-1">
+            Cliente: <strong>{pendingPayload.fullName}</strong>
+          </p>
+          <p>
+            Servicio: <strong>{pendingPayload.serviceType}</strong>
+          </p>
+          <p>
+            Tipo: <strong>{pendingPayload.serviceMode}</strong> | Cantidad: <strong>{pendingPayload.quantity}</strong>
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmOpen(false);
+                setPendingPayload(null);
+              }}
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-semibold text-slate-700"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmSubmit}
+              disabled={loading}
+              className="rounded-xl bg-brand-700 px-3 py-2 font-semibold text-white disabled:opacity-60"
+            >
+              {loading ? 'Guardando...' : 'Confirmar'}
+            </button>
+          </div>
+        </div>
       )}
     </form>
   );
