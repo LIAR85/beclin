@@ -261,3 +261,6 @@ with check (true);
 
 -- Optional read for dashboard metrics without opening write/delete.
 drop policy if exists orders_delete_none on public.orders;
+
+-- Refresh PostgREST schema cache after running in Supabase SQL Editor.
+notify pgrst, 'reload schema';
