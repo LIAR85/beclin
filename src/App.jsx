@@ -19,7 +19,9 @@ export default function App() {
 
       {!isSupabaseConfigured && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          Falta configurar Supabase. Crea un archivo .env basado en .env.example con VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.
+          <strong>Supabase no configurado.</strong> Agrega{' '}
+          <code className="rounded bg-amber-100 px-1">VITE_SUPABASE_URL</code> y{' '}
+          <code className="rounded bg-amber-100 px-1">VITE_SUPABASE_ANON_KEY</code> en las variables de entorno de Netlify y vuelve a desplegar.
         </div>
       )}
 
