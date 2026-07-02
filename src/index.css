@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  color: #1e3a4d;
+  background:
+    radial-gradient(circle at 15% 8%, #dff1ff 0%, transparent 42%),
+    radial-gradient(circle at 85% 0%, #cce8ff 0%, transparent 35%),
+    linear-gradient(180deg, #f7fcff 0%, #eef7ff 55%, #eaf4ff 100%);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: transparent;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 3mm;
+  }
+
+  body {
+    background: #ffffff;
+    margin: 0;
+    padding: 0;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .ticket-print-root,
+  .ticket-print-root * {
+    visibility: visible;
+  }
+
+  .ticket-print-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 74mm !important;
+    margin: 0;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1.3;
+  }
+}
